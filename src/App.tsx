@@ -44,6 +44,7 @@ function App(this: any) {
         await checkPublicPaused(dispatch);
         await checkWhitelistPaused(dispatch);
         await checkIfWhitelisted(dispatch);
+        console.log("mintedAmount: " + state.totalSLSupply)
         console.log("isPublicPaused: " + state.publicPaused);
         console.log("isWhitelistPaused: " + state.whitelistPaused);
         console.log("Whitelisted Address: " + state.isWhitelisted);
@@ -94,8 +95,7 @@ function App(this: any) {
                                 <h4>You missed the early flight list. Check back at 7:00pm UTC for the public flight.</h4>
                             </> : state.walletAddress && state.whitelistPaused && state.publicPaused ?
                             <>
-                                <h4>Welcome to the flight deck. You are early for your assignment.</h4>
-                                <h4>First ship departs at 6:00pm UTC. Second at 7:00pm UTC. Happy to have you here at the command center.</h4>
+                                <h4>We have the mint paused. Prepare for launch shortly</h4>
                             </> :
                             <>
                                 <h4>Hmmmm.....How did you get here.....</h4>

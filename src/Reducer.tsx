@@ -34,10 +34,10 @@ const Reducer = (state:any, action:any) => {
         ...state,
         onFantomNetwork: action.content
       }
-    case 'totalPopsSupply':
+    case 'totalSLSupply':
       return {
         ...state,
-        totalPopsSupply: action.content
+        totalSLSupply: action.content
       }
     case 'errorMessage':
       return {

@@ -52,7 +52,8 @@ export const checkTotalSupply = async (dispatch:any) => {
     provider = new ethers.providers.Web3Provider(window.ethereum);
     const supplyOfSL = await slContract.totalSupply();
     console.log(supplyOfSL.toNumber());
-    dispatch({type: 'totalSLSupply', content: supplyOfSL.toNumber()});
+    const supply = supplyOfSL.toNumber();
+    dispatch({type: 'totalSLSupply', content: supply});
   } catch(error) {
     console.log(error);
     dispatch({type: 'errorMessage', content: error});
