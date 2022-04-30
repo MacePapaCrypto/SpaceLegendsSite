@@ -2,9 +2,11 @@ export const defaultState = {
     walletAddress: "",
     walletContextDetected: false,
     onFantomNetwork: false,
-    totalPopsSupply: 0,
+    totalSLSupply: 0,
     errorMessage: "",
     isWhitelisted: false,
+    whitelistPaused: true,
+    publicPaused: true,
 };
 
 const formatAddress = (addressString:any) => {
@@ -46,6 +48,16 @@ const Reducer = (state:any, action:any) => {
       return {
           ...state,
           isWhitelisted: action.content
+      }
+    case 'whitelistPaused':
+        return {
+            ...state,
+            whitelistPaused: action.content
+        }
+    case 'publicPaused':
+      return {
+          ...state,
+          publicPaused: action.content
       }
     default:
       return state;

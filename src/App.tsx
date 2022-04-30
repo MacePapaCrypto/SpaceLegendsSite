@@ -13,7 +13,7 @@ import sebastion from "./images/sebastion.jpg";
 import clifton from "./images/clifton.jpg";
 import carson from "./images/carson.jpg";
 
-import { mint, checkTotalSupply, initializeEthers, checkForWhitelistMint } from "./functions/ethersFunctions";
+import { mint, checkTotalSupply, initializeEthers, checkWhitelistPaused, checkPublicPaused, checkIfWhitelisted } from "./functions/ethersFunctions";
 import ConnectWallet from "./components/ConnectWallet";
 import { Context } from "./Store";
 
@@ -23,7 +23,7 @@ const menuToggle = () => {
 }
 function App() {
 
-  //const [active, setActive] = React.useState("Public");
+  const [active, setActive] = React.useState("Public");
   const [state, dispatch]:any = useContext(Context);
   const [spendInput, setSpendInput] = useState('');
 
@@ -37,7 +37,9 @@ function App() {
   useEffect(() => {
     async function getSupply() {
         await checkTotalSupply(dispatch);
-        await checkForWhitelistMint(dispatch);
+        await checkPublicPaused(dispatch);
+        await checkWhitelistPaused(dispatch);
+        await checkIfWhitelisted(dispatch);
     }
     getSupply();
   },[state.walletAddress]);
@@ -66,18 +68,30 @@ function App() {
                 <div className="mint-text">
                     {
                             !state.walletAddress ? <h4>Connect Wallet to mint</h4> : 
-                            state.walletAddress && state.isWhitelisted ? 
+                            state.walletAddress && !state.isPublicPaused ? 
                             <>
-                                <h4>You are on the list. Cast your spell for free</h4>
-                                <br/>
-                                <button onClick={() => mint(dispatch, 1)}  disabled={false}>Summon</button>
-                            </>
-                            :
-                            <>
-                                <input type="number" value={spendInput} onInput={e => setSpendInput((e.target as HTMLInputElement).value)} placeholder="Amount: Max of 5"/>
+                                <input type="number" value={spendInput} onInput={(e: { target: HTMLInputElement; }) => setSpendInput((e.target as HTMLInputElement).value)} placeholder="Amount: Max of 5"/>
                                 <br/>
                                 <br/>
                                 <button onClick={() => mint(dispatch, spendInput)}  disabled={false}>Mint</button>
+                            </> : state.walletAddress && !state.isWhitelistPaused && state.isWhitelisted ?
+                            <>
+                                <h4>You're on the list. Press the launch button to mint an out of this world NFT.</h4>
+                                <input type="number" value={spendInput} onInput={(e: { target: HTMLInputElement; }) => setSpendInput((e.target as HTMLInputElement).value)} placeholder="Amount: Max of 5"/>
+                                <br/>
+                                <br/>
+                                <button onClick={() => mint(dispatch, spendInput)}  disabled={false}>Launch</button>
+                            </>
+                            : state.walletAddress && !state.whitelistPaused && !state.isWhitelisted ?
+                            <>
+                                <h4>You missed the early flight list. Check back at 7:00pm UTC for the public flight.</h4>
+                            </> : state.walletAddress && state.isWhitelistPaused && state.isPublicPaused ?
+                            <>
+                                <h4>Welcome to the flight deck. You are early for your assignment.</h4>
+                                <h4>First ship departs at 6:00pm UTC. Second at 7:00pm UTC. Happy to have you here at the command center.</h4>
+                            </> :
+                            <>
+                                <h4>Hmmmm.....How did you get here.....</h4>
                             </>
                     }
                     

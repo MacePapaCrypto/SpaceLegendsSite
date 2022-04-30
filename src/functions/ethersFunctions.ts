@@ -1,12 +1,12 @@
 import { BigNumber, ethers } from 'ethers';
 import { useContext } from 'react';
 import { Context } from '../Store';
-import popsABI from '../contractABIs/popsABI.json';
+import slABI from '../contractABIs/popsABI.json';
 
 
 declare const window:any;
 let provider:any = undefined;
-let popsContract:any = undefined;
+let slContract:any = undefined;
 const FANTOM_NETWORK_ID = "250";
 
 //Provider and Initialization
@@ -22,13 +22,13 @@ export const initializeEthers = async (dispatch:any) => {
     dispatch({type: 'walletContextDetected', content: true });
     dispatch({type: 'triggerAll', content: false});
 
-    popsContract = new ethers.Contract(
+    slContract = new ethers.Contract(
       "0x1b60B6daA371F5066bd8C1DC032627bf1f4E95df",
-      popsABI,
+      slABI,
       signer
     );
 
-    console.log(popsContract);
+    console.log(slContract);
 
     return addr;
   } catch (error) {
@@ -50,62 +50,77 @@ export const checkNetwork = () => {
 export const checkTotalSupply = async (dispatch:any) => {
   try {
     provider = new ethers.providers.Web3Provider(window.ethereum);
-    const supplyOfPops = await popsContract.totalSupply();
+    const supplyOfSL = await slContract.totalSupply();
     //console.log(supplyOfPops.toNumber());
-    dispatch({type: 'totalPopsSupply', content: supplyOfPops.toNumber()});
+    dispatch({type: 'totalSLSupply', content: supplyOfSL.toNumber()});
   } catch(error) {
-    return console.log(error);
+    console.log(error);
+    dispatch({type: 'errorMessage', content: error});
   }
 }
 
-export const checkForWhitelistMint = async (dispatch:any) => {
+export const checkWhitelistPaused = async (dispatch:any) => {
   try {
     provider = new ethers.providers.Web3Provider(window.ethereum);
-    let isWhitelisted = false;
+    const isPaused = await slContract.whitelistPaused();
+    dispatch({type: 'whitelistPaused', content: isPaused.toString() as boolean})
+  } catch(error) {
+    console.log(error);
+    dispatch({type: 'errorMessage', content: error});
+  }
+}
+
+export const checkPublicPaused = async (dispatch:any) => {
+  try {
+    provider = new ethers.providers.Web3Provider(window.ethereum);
+    const isPaused = await slContract.publicPaused();
+    dispatch({type: 'publicPaused', content: isPaused.toString() as boolean})
+  } catch(error) {
+    console.log(error);
+    dispatch({type: 'errorMessage', content: error});
+  }
+}
+
+export const checkIfWhitelisted = async (dispatch:any) => {
+  try {
+    provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner(0);
     const userAddress = signer.getAddress();
-    const whitelistNumber = await popsContract.whitelistedAddresses(userAddress);
-    console.log(whitelistNumber.toNumber());
-    if(whitelistNumber.toNumber() === 1) {
-      isWhitelisted = true;
+    const isWhitelistedNumber = await slContract.whitelistedAddresses(userAddress).toNumber();
+    if(isWhitelistedNumber === 1) {
+      dispatch({type: 'isWhitelisted', content: true});
+    } else {
+      dispatch({type: 'isWhitelisted', content: false});
     }
-    dispatch({type: 'isWhitelisted', content: isWhitelisted});
-    return isWhitelisted;
   } catch(error) {
+    dispatch({type: 'errorMessage', content: error});
     return console.log(error);
   }
-
 }
 
 export const mint = async (dispatch:any, amountToMint:any) => {
   try {
-    let amountToPayFor = amountToMint as number;
+    if(amountToMint > 5) {
+      amountToMint = 5;
+    }
     const ftmAddress = '0x0000000000000000000000000000000000000000'
     provider = new ethers.providers.Web3Provider(window.ethereum);
-    const isWhitelisted = await checkForWhitelistMint(dispatch);
-    console.log(isWhitelisted);
-    if(isWhitelisted) {
-      amountToPayFor--;
-      console.log("Made it in the if statement");
-    }
-    console.log(amountToPayFor);
     const signer = provider.getSigner(0);
-    const cost = 50;
-    const totalyPayout = cost * amountToPayFor;
-    let gasLimitForTx = amountToPayFor * 280000;
-    if(amountToPayFor === 0) {
-        gasLimitForTx = gasLimitForTx + 250000;
-    }
+    const cost = 30;
+    const totalyPayout = cost * amountToMint;
+    let gasLimitForTx = amountToMint * 280000;
     console.log(totalyPayout);
     try {
-      const connectedpopsContract = await popsContract.connect(signer);
-      const tx = await connectedpopsContract.mint(ftmAddress, amountToMint,
+      const connectedSLContract = await slContract.connect(signer);
+      const tx = await connectedSLContract.mint(ftmAddress, amountToMint,
         {gasLimit: gasLimitForTx, "value": ethers.utils.parseUnits(totalyPayout.toString(),'ether')}
       );
     } catch(error) {
+      dispatch({type: 'errorMessage', content: error});
       return console.log(error);
     }
   } catch(error) {
+    dispatch({type: 'errorMessage', content: error});
     return console.log(error);
   }
 }
