@@ -23,7 +23,7 @@ export const initializeEthers = async (dispatch:any) => {
     dispatch({type: 'triggerAll', content: false});
 
     slContract = new ethers.Contract(
-      "0xffd843fb200c03e8fb33d13917b6ee538c42f1ce",
+      "0xdc50cBe355C39C0619DF2060a05DE111C8A77f39",
       slABI,
       signer
     );
