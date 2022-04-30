@@ -21,11 +21,15 @@ const menuToggle = () => {
     const navlinks = document.querySelector('.nav-links');
     navlinks?.classList.toggle('mobile-menu');
 }
-function App() {
+function App(this: any) {
 
   const [active, setActive] = React.useState("Public");
   const [state, dispatch]:any = useContext(Context);
   const [spendInput, setSpendInput] = useState('');
+
+  const handleInput = (event: React.FormEvent<HTMLInputElement>): void => {
+      setSpendInput(event.currentTarget.value);
+  }
 
   useEffect(() => {
     async function getInit() {
@@ -40,6 +44,9 @@ function App() {
         await checkPublicPaused(dispatch);
         await checkWhitelistPaused(dispatch);
         await checkIfWhitelisted(dispatch);
+        console.log("isPublicPaused: " + state.publicPaused);
+        console.log("isWhitelistPaused: " + state.whitelistPaused);
+        console.log("Whitelisted Address: " + state.isWhitelisted);
     }
     getSupply();
   },[state.walletAddress]);
@@ -60,7 +67,7 @@ function App() {
             <section className="drops">
             <div className="title">
             <h1>Become a legend.</h1>
-            <h2>{state.totalPopsSupply}/2,500</h2>
+            <h2>{state.totalSLSupply}/2,500</h2>
             <h4>Each SpaceLegend is 30 FTM</h4>
             </div>
             <div className="row">
@@ -68,16 +75,16 @@ function App() {
                 <div className="mint-text">
                     {
                             !state.walletAddress ? <h4>Connect Wallet to mint</h4> : 
-                            state.walletAddress && !state.isPublicPaused ? 
+                            state.walletAddress && !state.publicPaused ? 
                             <>
-                                <input type="number" value={spendInput} onInput={(e: { target: HTMLInputElement; }) => setSpendInput((e.target as HTMLInputElement).value)} placeholder="Amount: Max of 5"/>
+                                <input id="input" type="number" value={spendInput} onChange={handleInput} placeholder="Amount: Max of 5"/>
                                 <br/>
                                 <br/>
                                 <button onClick={() => mint(dispatch, spendInput)}  disabled={false}>Mint</button>
-                            </> : state.walletAddress && !state.isWhitelistPaused && state.isWhitelisted ?
+                            </> : state.walletAddress && !state.whitelistPaused && state.isWhitelisted ?
                             <>
                                 <h4>You're on the list. Press the launch button to mint an out of this world NFT.</h4>
-                                <input type="number" value={spendInput} onInput={(e: { target: HTMLInputElement; }) => setSpendInput((e.target as HTMLInputElement).value)} placeholder="Amount: Max of 5"/>
+                                <input type="number" value={spendInput} onChange={handleInput} placeholder="Amount: Max of 5"/>
                                 <br/>
                                 <br/>
                                 <button onClick={() => mint(dispatch, spendInput)}  disabled={false}>Launch</button>
@@ -85,7 +92,7 @@ function App() {
                             : state.walletAddress && !state.whitelistPaused && !state.isWhitelisted ?
                             <>
                                 <h4>You missed the early flight list. Check back at 7:00pm UTC for the public flight.</h4>
-                            </> : state.walletAddress && state.isWhitelistPaused && state.isPublicPaused ?
+                            </> : state.walletAddress && state.whitelistPaused && state.publicPaused ?
                             <>
                                 <h4>Welcome to the flight deck. You are early for your assignment.</h4>
                                 <h4>First ship departs at 6:00pm UTC. Second at 7:00pm UTC. Happy to have you here at the command center.</h4>

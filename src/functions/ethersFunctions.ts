@@ -1,7 +1,7 @@
 import { BigNumber, ethers } from 'ethers';
 import { useContext } from 'react';
 import { Context } from '../Store';
-import slABI from '../contractABIs/popsABI.json';
+import slABI from '../contractABIs/slABI.json';
 
 
 declare const window:any;
@@ -23,7 +23,7 @@ export const initializeEthers = async (dispatch:any) => {
     dispatch({type: 'triggerAll', content: false});
 
     slContract = new ethers.Contract(
-      "0x1b60B6daA371F5066bd8C1DC032627bf1f4E95df",
+      "0xffd843fb200c03e8fb33d13917b6ee538c42f1ce",
       slABI,
       signer
     );
@@ -51,7 +51,7 @@ export const checkTotalSupply = async (dispatch:any) => {
   try {
     provider = new ethers.providers.Web3Provider(window.ethereum);
     const supplyOfSL = await slContract.totalSupply();
-    //console.log(supplyOfPops.toNumber());
+    console.log(supplyOfSL.toNumber());
     dispatch({type: 'totalSLSupply', content: supplyOfSL.toNumber()});
   } catch(error) {
     console.log(error);
@@ -63,7 +63,8 @@ export const checkWhitelistPaused = async (dispatch:any) => {
   try {
     provider = new ethers.providers.Web3Provider(window.ethereum);
     const isPaused = await slContract.whitelistPaused();
-    dispatch({type: 'whitelistPaused', content: isPaused.toString() as boolean})
+    console.log("isWhitelistPaused: " + isPaused);
+    dispatch({type: 'whitelistPaused', content: isPaused})
   } catch(error) {
     console.log(error);
     dispatch({type: 'errorMessage', content: error});
@@ -74,7 +75,8 @@ export const checkPublicPaused = async (dispatch:any) => {
   try {
     provider = new ethers.providers.Web3Provider(window.ethereum);
     const isPaused = await slContract.publicPaused();
-    dispatch({type: 'publicPaused', content: isPaused.toString() as boolean})
+    console.log("isPublicPaused: " + isPaused);
+    dispatch({type: 'publicPaused', content: isPaused})
   } catch(error) {
     console.log(error);
     dispatch({type: 'errorMessage', content: error});
@@ -86,10 +88,13 @@ export const checkIfWhitelisted = async (dispatch:any) => {
     provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner(0);
     const userAddress = signer.getAddress();
-    const isWhitelistedNumber = await slContract.whitelistedAddresses(userAddress).toNumber();
-    if(isWhitelistedNumber === 1) {
+    const isWhitelistedNumber = await slContract.whitelistedAddresses(userAddress);
+    console.log("Whitelisted Address Response: " + isWhitelistedNumber);
+    if(isWhitelistedNumber.toNumber() === 1) {
+      console.log("Made it");
       dispatch({type: 'isWhitelisted', content: true});
     } else {
+      console.log("Didn't make it");
       dispatch({type: 'isWhitelisted', content: false});
     }
   } catch(error) {
